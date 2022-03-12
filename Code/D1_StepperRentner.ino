@@ -65,13 +65,13 @@ char TimeChar[80];
 
 // WiFi settings
 
-const char* ssid = "orange";
-const char* password = "w!r messen 1000 Werte";
+const char* ssid = "xxxxxx";
+const char* password = "xxxxxxxx";
 
 // Manni.42
 /*
-const char* ssid = "vielleicht";
-const char* password = "#xmanni19.195501";
+const char* ssid = "yyyyyy";
+const char* password = "yyyyyyyyy";
 */
 char Hostname[32];
 long lastReconnectAttempt = 0;
