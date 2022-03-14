@@ -1,5 +1,6 @@
 /*
    Rentner-Uhr.
+   siehe https://github.com/kfeger/Rentneruhr
    Sinn ist die Anzeige des Wochentags auf einer
    großen Skala.
    Die Position wird alle 3 Stunden aktualisiert.
@@ -26,7 +27,7 @@ const int stepsPerRevolution = 2048;  // change this to fit the number of steps 
 
 #define MAX_POS 1710
 #define MIN_POS 0
-#define OFFSET_STEPPER 175  // vom Anschlag aus
+#define OFFSET_STEPPER 188  // vom Anschlag aus
 #define STEPS_PER_DAY 230   //Schritte pro 24h
 #define STEPS_PER_REVOLUTION 2048
 #define STEPS_24H 240
@@ -37,13 +38,13 @@ int OldPosition, CurrentPosition;
 // Definitionen edr 0:00h-Position
 const int Day0Position[8] = {
   0,
-  245,
-  482,
-  712,
-  948,
-  1193,
-  1430,
-  1684
+  241,  // Di 0h
+  478,  // Mi
+  706,  // Do
+  934,  // Fr
+  1178, // Sa
+  1409, // So
+  1680
 };
 
 ADC_MODE(ADC_VCC);
@@ -64,15 +65,15 @@ tm tm;
 char TimeChar[80];
 
 // WiFi settings
-
-const char* ssid = "xxxxxx";
-const char* password = "xxxxxxxx";
-
-// Manni.42
 /*
-const char* ssid = "yyyyyy";
-const char* password = "yyyyyyyyy";
+const char* ssid = "orange";
+const char* password = "w!r messen 1000 Werte";
 */
+// Manni.42
+/**/
+const char* ssid = "vielleicht";
+const char* password = "#xmanni19.195501";
+/**/
 char Hostname[32];
 long lastReconnectAttempt = 0;
 int PayloadValue = 0;
