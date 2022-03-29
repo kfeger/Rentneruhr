@@ -27,11 +27,13 @@ const int stepsPerRevolution = 2048;  // change this to fit the number of steps 
 
 #define MAX_POS 1710
 #define MIN_POS 0
+#define HALF_POS 1024
 #define OFFSET_STEPPER 188  // vom Anschlag aus
 #define STEPS_PER_DAY 230   //Schritte pro 24h
 #define STEPS_PER_REVOLUTION 2048
-#define STEPS_24H 240
 #define STEPS_3H 30
+#define STEPS_1H 9
+//#define STEPPER_OFF
 bool HomeRun = false;
 int OldPosition, CurrentPosition;
 
@@ -43,8 +45,29 @@ const int Day0Position[8] = {
   706,  // Do
   934,  // Fr
   1178, // Sa
-  1409, // So
+  1425, // So
   1680
+};
+const int StepWidth[7] = {
+  10,
+  10,
+  9,
+  9,
+  10,
+  10,
+  10
+};
+int DayIndex = 0;
+
+const char* Wochentag[8] = {
+  "Sonntag",
+  "Montag",
+  "Dienstag",
+  "Mittwoch",
+  "Donnerstag",
+  "Freitag",
+  "Samstag",
+  "Fehler"
 };
 
 ADC_MODE(ADC_VCC);
@@ -65,15 +88,20 @@ tm tm;
 char TimeChar[80];
 
 // WiFi settings
-/*
+/**/
 const char* ssid = "orange";
 const char* password = "w!r messen 1000 Werte";
-*/
-// Manni.42
 /**/
+// Manni.42
+/*
 const char* ssid = "vielleicht";
 const char* password = "#xmanni19.195501";
-/**/
+*/
+// Dietmar
+/*
+const char* ssid = "Hacker";
+const char* password = "2253210679";
+*/
 char Hostname[32];
 long lastReconnectAttempt = 0;
 int PayloadValue = 0;
@@ -94,11 +122,22 @@ void setup() {
   int LastSlash = BaseFile.lastIndexOf('\\');
   String BaseFileSub = BaseFile.substring(LastSlash + 1);
   BaseFile = BaseFileSub.substring(0, BaseFileSub.length() - 8);
+  #ifdef STEPPER_OFF
+    BaseFile += " (Stepper ausgeschaltet)";
+    #pragma message ("Stepper ausgeschaltet")
+  #else
+    BaseFile += " (Stepper dauernd an)";
+    #pragma message ("Stepper dauernd an")
+  #endif
   // fertig
   // initialize the serial port
   Serial.begin(115200);
-  Serial.println("");
-  delay(1000);
+  delay(100);
+  Serial.println(" ");
+  Serial.println("WLAN-Suche anzeigen");
+  stepper.setMaxSpeed(400);
+  stepper.setAcceleration(100);
+  HalfPos();
   randomSeed(ESP.getVcc());
   WiFi.mode(WIFI_STA);
   byte macAddr[6];
@@ -108,6 +147,7 @@ void setup() {
 
   // Connect to WiFi
   WiFi.begin(ssid, password);
+  bool updown = false;
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
@@ -136,8 +176,6 @@ void setup() {
   serverUpdater.setup(&server);
   server.begin();
 
-  stepper.setMaxSpeed(400);
-  stepper.setAcceleration(100);
   homeStepper();
   Serial.println("Geht los!");
   DayStepDemo();

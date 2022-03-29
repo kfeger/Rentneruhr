@@ -9,7 +9,22 @@ void moveStepper(int Position) {
     yield();
   }
   CurrentPosition = stepper.currentPosition();
-  //delay(1000);
+}
+
+void moveStepperWithOff(int Position) {
+  #ifdef STEPPER_OFF
+    stepper.enableOutputs();
+    delay(100);
+  #endif
+  OldPosition = stepper.currentPosition();
+  stepper.moveTo(Position);
+  while (stepper.run()) {
+    yield();
+  }
+  CurrentPosition = stepper.currentPosition();
+  #ifdef STEPPER_OFF
+    stepper.disableOutputs();
+  #endif
 }
 
 /*
@@ -30,10 +45,14 @@ void homeStepper(void) {
   HomeRun = false;
 }
 
+void HalfPos(void) {
+  moveStepper(2048);
+  moveStepper(HALF_POS);
+}
+
 void CalcNewPosition(void) {
   int NextPosition = 0;
   int HourPos = 0;
-  int DayIndex = 0;
   DayIndex = tm.tm_wday;  // Achtung: 0 = Sonntag lt. time.h
   // auf Skale aber 6 = Sonntag!
   if (DayIndex != 0)      // Index auf Skala umrechnen
@@ -41,11 +60,15 @@ void CalcNewPosition(void) {
   else
     DayIndex = 6;         // So = 6
 
-  NextPosition = Day0Position[DayIndex] +  ((tm.tm_hour / 3) * STEPS_3H);
+  if(tm.tm_hour == 0)
+    NextPosition = Day0Position[DayIndex];
+  else
+    NextPosition = Day0Position[DayIndex] +  (tm.tm_hour * StepWidth[DayIndex]);
+    
   if (CurrentPosition != NextPosition) {
-    Serial.printf("Wochentag: %d, Stunde: %d, Stunde mod 3: %d\nSchritte bis heute 0: %d, Schritte ab heute 0: %d\n", tm.tm_wday, \
-                  tm.tm_hour, tm.tm_hour / 3, Day0Position[DayIndex], ((tm.tm_hour / 3) * STEPS_3H));
-    moveStepper(NextPosition);
+    Serial.printf("Wochentag: %d(%s), Stunde: %d, Schritte pro Stunde: %d\nSchritte bis %s 0h: %d, Schritte ab %s 0h: %d\n", tm.tm_wday, \
+                  Wochentag[tm.tm_wday], tm.tm_hour, STEPS_1H, Wochentag[tm.tm_wday],Day0Position[DayIndex], Wochentag[tm.tm_wday], tm.tm_hour * STEPS_1H);
+    moveStepperWithOff(NextPosition);
   }
 }
 

@@ -9,6 +9,8 @@ void handleRoot() {
   Message += "<h2>Hostname = " + String(Hostname);
   Message += "<br> Datum und Uhrzeit: " + String(TimeChar);
   Message += "<br>Stepper-Position = " + String(CurrentPosition);
+  Message += "<br>Tag (0h)-Position = " + String(Day0Position[DayIndex]);
+  Message += "<br>Tag-Schrittwaeite = " + String(StepWidth[DayIndex]);
   Message += "</h2>";
   Message += "<br>Kompiliert am " + String(__DATE__) + " um " + String(__TIME__);
   Message += "<br><b>&copy; ottO 2022</b>";
